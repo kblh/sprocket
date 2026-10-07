@@ -10,7 +10,7 @@ Webová aplikace (vanilla JS + HTML + CSS, bez frameworků a build kroku), kter�
 ## 2. Rozsah
 
 ### V rozsahu
-- Živý náhled z kamery v panoramatickém rámečku (poměr 3:1) s perforací a okraji filmu.
+- Živý náhled z kamery v panoramatickém rámečku (poměr 2,2:1 podle referenčního snímku 2860×1302) s perforací a okraji filmu.
 - Přepnutí zadní a přední kamery.
 - Volné focení: spoušť okamžitě vytvoří jeden hotový snímek. Žádné počítadlo a žádné přetáčení filmu.
 - Jediný film: Kodak Tri-X 400, černobílý (bez výběru filmů).
@@ -64,8 +64,8 @@ Funkce `applyTriX(imageData, options)` pracuje na místě. Kroky:
 Parametry jsou jedna konstanta `TRIX` (kontrast, zrno, vinětace, měkkost). `options.seed` umožňuje deterministické zrno pro testy.
 
 ### frame.js
-- `layout(width)` vrací rozměry panoramatického rámu: poměr obrazu 3:1, okraje filmu nahoře a dole, pozice a velikost perforačních otvorů (zaoblené obdélníky, pravidelná rozteč), pozice čísla snímku a popisku.
-- `drawFrame(ctx, image, width, meta)` vykreslí obraz do rámu. Obraz **přesahuje přes perforaci**: viditelný je i v otvorech, okraje filmu jsou černé s popisky „KODAK TRI-X 400“ a číslem snímku ve stylu hrany filmu.
+- `layout(width)` vrací rozměry panoramatického rámu: poměr obrazu 2,2:1, okraje filmu nahoře a dole, pozice a velikost perforačních otvorů (zaoblené obdélníky, pravidelná rozteč), pozice čísla snímku a popisku.
+- `drawFrame(ctx, image, width, meta)` vykreslí obraz do rámu. Snímek je plnoformátový, obraz jde až k okraji. Perforace jsou jen černé zaoblené otvory přes obraz (horní a dolní řada), dole je bílé číslování ve stylu hrany filmu (`35  ▶35A  36  ▶36A`). Žádný popisek filmu (TRI-X) se nezobrazuje.
 - Použije se pro živý náhled (nízké rozlišení) i pro hotový snímek (vysoké).
 
 ### save.js
@@ -78,7 +78,7 @@ Parametry jsou jedna konstanta `TRIX` (kontrast, zrno, vinětace, měkkost). `op
 
 ### app.js
 - Obrazovky: *kamera* a *galerie*.
-- Smyčka náhledu přes `requestAnimationFrame`: kamera → ořez na 3:1 → `film.js` v nízkém rozlišení → `frame.js` → canvas na obrazovce.
+- Smyčka náhledu přes `requestAnimationFrame`: kamera → ořez na 2,2:1 → `film.js` v nízkém rozlišení → `frame.js` → canvas na obrazovce.
 - Spoušť: zmrazí aktuální snímek, zpracuje ho ve vysokém rozlišení, vykreslí do rámu, uloží do galerie, zobrazí záblesk a zahraje cvaknutí. Miniatura posledního snímku se aktualizuje.
 
 ## 6. Obrazovka kamery
@@ -96,7 +96,7 @@ Parametry jsou jedna konstanta `TRIX` (kontrast, zrno, vinětace, měkkost). `op
 
 ## 8. Testování
 
-- **Automaticky (Node, bez závislostí):** `frame.layout` (poměr 3:1, perforace v mezích, počet a rozteč otvorů), `film.applyTriX` (výsledek je šedotónový: R=G=B, vinětace ztmaví rohy víc než střed, deterministické zrno při stejném `seed`).
+- **Automaticky (Node, bez závislostí):** `frame.layout` (poměr 2,2:1, perforace v mezích, počet a rozteč otvorů), `film.applyTriX` (výsledek je šedotónový: R=G=B, vinětace ztmaví rohy víc než střed, deterministické zrno při stejném `seed`).
 - **Ručně:** Chrome desktop přes `localhost`, telefon přes HTTPS (kamera, přepnutí, spoušť, uložení do Fotek přes sdílecí list, galerie, odepřená kamera).
 
 ## 9. Kritéria úspěchu

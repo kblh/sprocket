@@ -10,7 +10,7 @@ function fakeCtx() {
   });
 }
 
-test('drawFrame: obraz, pásy s otvory (evenodd) a popisky', () => {
+test('drawFrame: obraz přes celou plochu, pak černé otvory a číslování', () => {
   const L = layout(1200);
   const ctx = fakeCtx();
   const src = {};
@@ -19,11 +19,18 @@ test('drawFrame: obraz, pásy s otvory (evenodd) a popisky', () => {
   const iDraw = ctx.calls.findIndex((c) => c[0] === 'drawImage');
   const iFill = ctx.calls.findIndex((c) => c[0] === 'fill');
   assert.deepEqual(ctx.calls[iDraw].slice(1), [src, 0, 0, L.width, L.height]);
-  assert.equal(ctx.calls[iFill][1], 'evenodd');
   assert.ok(iDraw < iFill);
+  assert.equal(ctx.calls.filter((c) => c[0] === 'arcTo').length, L.holes.length * 4);
+  assert.equal(ctx.calls.filter((c) => c[0] === 'rect').length, 0);
 
   const texts = ctx.calls.filter((c) => c[0] === 'fillText').map((c) => c[1]);
-  assert.ok(texts.includes('KODAK TRI-X 400'));
-  assert.ok(texts.some((t) => t.includes('7A')));
-  assert.equal(ctx.calls.filter((c) => c[0] === 'arcTo').length, L.holes.length * 4);
+  assert.deepEqual([...texts].sort(), ['7', '8', '▶7A', '▶8A']);
+});
+
+test('drawFrame: žádný popisek filmu (TRI-X/KODAK) na pásu', () => {
+  const ctx = fakeCtx();
+  drawFrame(ctx, {}, layout(1200), { number: 36 });
+  const texts = ctx.calls.filter((c) => c[0] === 'fillText').map((c) => c[1]).join(' ');
+  assert.ok(!/TRI|KODAK|400/i.test(texts));
+  assert.deepEqual(texts.split(' ').sort(), ['1', '36', '▶1A', '▶36A']);
 });

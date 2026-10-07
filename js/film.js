@@ -1,7 +1,7 @@
 export const TRIX = {
   mix: [0.40, 0.45, 0.15],
-  curve: 0.55,
-  grain: 0.09,
+  curve: 0.7,
+  grain: 0.045,
   vignette: 0.6,
   softness: 0.5,
 };

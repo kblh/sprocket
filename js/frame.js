@@ -1,4 +1,4 @@
-export const ASPECT = 3;
+export const ASPECT = 2.2;
 
 export function cropRect(vw, vh) {
   const sh = Math.min(vh, vw / ASPECT);
@@ -8,27 +8,33 @@ export function cropRect(vw, vh) {
 
 export function layout(width) {
   const height = Math.round(width / ASPECT);
-  const band = Math.round(height * 0.16);
-  const holeH = Math.round(band * 0.42);
-  const holeW = Math.round(holeH * 1.4);
-  const pitch = Math.round(holeW * 1.9);
-  const inset = Math.round(band * 0.12);
-  const r = Math.round(holeH * 0.25);
-  const count = Math.max(0, Math.floor(width / pitch) - 1);
+  const holeH = Math.round(height * 0.0825);
+  const holeW = Math.round(holeH * 0.72);
+  const pitch = Math.round(holeW * 2.33);
+  const r = Math.round(holeW * 0.15);
+  const topY = Math.round(height * 0.0385);
+  const bottomY = Math.round(height * 0.935) - holeH;
+  const count = Math.max(0, Math.floor((width - holeW) / pitch) + 1);
   const startX = Math.round((width - ((count - 1) * pitch + holeW)) / 2);
   const holes = [];
   for (let i = 0; i < count; i++) {
     const x = startX + i * pitch;
-    holes.push({ x, y: inset, w: holeW, h: holeH, r });
-    holes.push({ x, y: height - inset - holeH, w: holeW, h: holeH, r });
+    holes.push({ x, y: topY, w: holeW, h: holeH, r });
+    holes.push({ x, y: bottomY, w: holeW, h: holeH, r });
   }
-  const size = Math.max(6, Math.round(band * 0.2));
-  const y = height - Math.round(band * 0.78);
-  const margin = Math.round(width * 0.03);
   return {
-    width, height, band, holes,
-    label: { x: margin, y, size },
-    number: { x: width - margin, y, size },
+    width, height, holes,
+    text: {
+      y: Math.round(height * 0.985),
+      bigSize: Math.round(height * 0.065),
+      smallSize: Math.round(height * 0.048),
+      xs: {
+        n0: Math.round(width * 0.153),
+        a0: Math.round(width * 0.39),
+        n1: Math.round(width * 0.655),
+        a1: Math.round(width * 0.8),
+      },
+    },
   };
 }
 
@@ -48,19 +54,21 @@ function roundedRect(ctx, { x, y, w, h, r }) {
 export function drawFrame(ctx, source, L, meta = {}) {
   ctx.drawImage(source, 0, 0, L.width, L.height);
 
-  ctx.fillStyle = '#0a0a0a';
+  ctx.fillStyle = '#050505';
   ctx.beginPath();
-  ctx.rect(0, 0, L.width, L.band);
-  ctx.rect(0, L.height - L.band, L.width, L.band);
   for (const hole of L.holes) roundedRect(ctx, hole);
-  ctx.fill('evenodd');
+  ctx.fill();
 
-  ctx.fillStyle = '#d8d8d8';
-  ctx.font = `${L.label.size}px "Courier New", monospace`;
-  ctx.textBaseline = 'middle';
-  ctx.textAlign = 'left';
-  ctx.fillText('KODAK TRI-X 400', L.label.x, L.label.y);
-  ctx.textAlign = 'right';
   const n = meta.number ?? 1;
-  ctx.fillText(`${n}   ${n}A`, L.number.x, L.number.y);
+  const next = (n % 36) + 1;
+  const { y, bigSize, smallSize, xs } = L.text;
+  ctx.fillStyle = '#f2f2f2';
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  ctx.font = `bold ${bigSize}px "Helvetica Neue", Arial, sans-serif`;
+  ctx.fillText(`${n}`, xs.n0, y);
+  ctx.fillText(`${next}`, xs.n1, y);
+  ctx.font = `bold ${smallSize}px "Helvetica Neue", Arial, sans-serif`;
+  ctx.fillText(`▶${n}A`, xs.a0, y);
+  ctx.fillText(`▶${next}A`, xs.a1, y);
 }

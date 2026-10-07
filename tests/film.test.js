@@ -91,3 +91,22 @@ test('grainSizeFor roste s rozlišením', () => {
   assert.equal(grainSizeFor(640), 1);
   assert.equal(grainSizeFor(3600), 3);
 });
+
+test('zrno je jemné: směrodatná odchylka na středním šedém poli je nízká', () => {
+  const img = image(64, 64, [128, 128, 128]);
+  applyTriX(img, { vignette: 0, softness: 0 });
+  const vals = Array.from({ length: 64 * 64 }, (_, i) => img.data[i * 4]);
+  const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
+  const std = Math.sqrt(vals.reduce((a, b) => a + (b - mean) ** 2, 0) / vals.length);
+  assert.ok(std < 14, `std ${std}`);
+});
+
+test('kontrast: stíny jsou hlubší a světla výš než dřív', () => {
+  const out = (g) => {
+    const img = image(1, 1, [g, g, g]);
+    applyTriX(img, PLAIN);
+    return img.data[0];
+  };
+  assert.ok(out(64) <= 49, `out(64)=${out(64)}`);
+  assert.ok(out(192) >= 207, `out(192)=${out(192)}`);
+});
