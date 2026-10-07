@@ -31,3 +31,36 @@ export function layout(width) {
     number: { x: width - margin, y, size },
   };
 }
+
+function roundedRect(ctx, { x, y, w, h, r }) {
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+export function drawFrame(ctx, source, L, meta = {}) {
+  ctx.drawImage(source, 0, 0, L.width, L.height);
+
+  ctx.fillStyle = '#0a0a0a';
+  ctx.beginPath();
+  ctx.rect(0, 0, L.width, L.band);
+  ctx.rect(0, L.height - L.band, L.width, L.band);
+  for (const hole of L.holes) roundedRect(ctx, hole);
+  ctx.fill('evenodd');
+
+  ctx.fillStyle = '#d8d8d8';
+  ctx.font = `${L.label.size}px "Courier New", monospace`;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  ctx.fillText('KODAK TRI-X 400', L.label.x, L.label.y);
+  ctx.textAlign = 'right';
+  const n = meta.number ?? 1;
+  ctx.fillText(`${n}   ${n}A`, L.number.x, L.number.y);
+}
