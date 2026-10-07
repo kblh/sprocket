@@ -42,6 +42,15 @@
   </section>
 
   <div id="toast" class="toast" hidden></div>
+  <script>
+    // ES moduly se z file:// nenačtou (CORS), aplikace by zůstala tiše prázdná.
+    if (location.protocol === 'file:') {
+      document.getElementById('message-text').textContent =
+        'Stránku nelze otevřít dvojklikem na soubor. Spusť server (python3 -m http.server 8000) a otevři http://localhost:8000';
+      document.getElementById('retry').hidden = true;
+      document.getElementById('message').hidden = false;
+    }
+  </script>
   <script type="module" src="js/app.js"></script>
 </body>
 </html>
