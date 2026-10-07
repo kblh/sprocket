@@ -85,7 +85,6 @@ Parametry jsou jedna konstanta `TRIX` (kontrast, zrno, vinětace, měkkost). `op
 
 - Živý náhled v panoramatickém rámečku s perforací, vystředěný na obrazovce (na výšku telefonu zabírá celou šířku, nad a pod ním tmavé pozadí).
 - Dole velká kulatá spoušť. Vlevo miniatura posledního snímku (otevře galerii), vpravo přepnutí kamery.
-- Po stisku spouště krátký bílý záblesk (CSS animace, ~120 ms) a cvaknutí.
 - Po pořízení snímku se na chvíli zobrazí náhled hotového snímku s tlačítky **Uložit / Sdílet** a **Zavřít**.
 
 ## 7. Chyby
