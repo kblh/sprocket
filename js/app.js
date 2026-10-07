@@ -116,6 +116,7 @@ async function startCamera() {
     await video.play();
     message.hidden = true;
   } catch (e) {
+    if (e?.kind === 'superseded' || e?.name === 'AbortError') return;
     $('message-text').textContent = MESSAGES[e?.kind] ?? MESSAGES.unknown;
     message.hidden = false;
   }

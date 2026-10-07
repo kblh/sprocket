@@ -31,3 +31,40 @@ test('start vrátí stream a stop zastaví stopy', async () => {
   stop();
   assert.equal(stopped, 2);
 });
+
+function deferredNav() {
+  const pending = [];
+  const nav = { mediaDevices: { getUserMedia: () => new Promise((resolve) => pending.push(resolve)) } };
+  const mkStream = () => {
+    const s = { stopped: 0 };
+    s.getTracks = () => [{ stop: () => s.stopped++ }];
+    return s;
+  };
+  return { nav, pending, mkStream };
+}
+
+test('překrývající se start: starší stream se zastaví a starší volání skončí superseded', async () => {
+  const { nav, pending, mkStream } = deferredNav();
+  const first = start('environment', nav);
+  const second = start('user', nav);
+  const s1 = mkStream();
+  const s2 = mkStream();
+  pending[1](s2);
+  pending[0](s1);
+  assert.equal(await second, s2);
+  await assert.rejects(first, (e) => e instanceof CameraError && e.kind === 'superseded');
+  assert.equal(s1.stopped, 1);
+  assert.equal(s2.stopped, 0);
+  stop();
+  assert.equal(s2.stopped, 1);
+});
+
+test('stop během čekání na kameru zastaví pozdě příchozí stream', async () => {
+  const { nav, pending, mkStream } = deferredNav();
+  const p = start('environment', nav);
+  stop();
+  const s = mkStream();
+  pending[0](s);
+  await assert.rejects(p, (e) => e.kind === 'superseded');
+  assert.equal(s.stopped, 1);
+});

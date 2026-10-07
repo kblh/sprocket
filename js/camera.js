@@ -22,8 +22,10 @@ export function classifyError(err) {
 }
 
 let stream = null;
+let generation = 0;
 
 export function stop() {
+  generation++;
   stream?.getTracks().forEach((t) => t.stop());
   stream = null;
 }
@@ -33,13 +35,21 @@ export async function start(facingMode = 'environment', nav = globalThis.navigat
   if (!nav?.mediaDevices?.getUserMedia) {
     throw new CameraError('unsupported', 'getUserMedia is not available');
   }
+  const gen = generation;
+  let s;
   try {
-    stream = await nav.mediaDevices.getUserMedia({
+    s = await nav.mediaDevices.getUserMedia({
       audio: false,
       video: { facingMode: { ideal: facingMode }, width: { ideal: 1920 }, height: { ideal: 1080 } },
     });
-    return stream;
   } catch (e) {
+    if (gen !== generation) throw new CameraError('superseded', 'start superseded');
     throw new CameraError(classifyError(e), e?.message ?? String(e));
   }
+  if (gen !== generation) {
+    s.getTracks().forEach((t) => t.stop());
+    throw new CameraError('superseded', 'start superseded');
+  }
+  stream = s;
+  return s;
 }
