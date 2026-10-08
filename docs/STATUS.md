@@ -16,6 +16,7 @@ Vše bylo ověřeno jen v headless Chrome na Macu (falešná a syntetická kamer
 - Uložení do Fotek přes sdílecí list (Web Share API se souborem). V testech je jen napodobený `navigator`.
 - Jestli iOS Safari dekóduje obraz ze skrytého `<video>` (1×1 px, `opacity: 0`). Pokud ne, náhled zůstane černý.
 - Ultraširoká kamera: výběr podle názvu zařízení z `enumerateDevices()` a zoom pod 1×. Závisí na telefonu a prohlížeči, na Macu nejde otestovat.
+- Zoom: zda telefon nabídne `zoom` v `getCapabilities()` (Android Chrome ano, iOS Safari nejspíš ne). Bez něj je 10× jen digitální ořez, tedy výrazně méně detailů.
 - Zpracování snímku 3600×1636 na starších iPhonech (paměť, doba, odhad 1–2 s).
 
 ## Odložené drobnosti ze závěrečné revize

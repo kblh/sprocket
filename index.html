@@ -14,6 +14,7 @@
     <button id="open-gallery" class="thumb-btn gallery-btn" aria-label="Galerie">
       <span id="gallery-icon">▦</span><img id="last-thumb" alt="" hidden>
     </button>
+    <button id="switch-camera" class="round-btn top-btn right-btn" aria-label="Přepnout kameru">⟲</button>
     <div class="viewfinder" id="viewfinder">
       <canvas id="preview"></canvas>
       <div id="flash"></div>
@@ -22,10 +23,10 @@
       <p id="message-text"></p>
       <button id="retry" class="text-btn">Zkusit znovu</button>
     </div>
-    <div class="controls">
+    <div class="controls" id="controls">
       <button id="orientation" class="round-btn" aria-label="Otočit film (na šířku / na výšku)">▭</button>
       <button id="shutter" aria-label="Spoušť"></button>
-      <button id="switch-camera" class="round-btn" aria-label="Přepnout kameru">⟲</button>
+      <button id="zoom" class="round-btn" aria-label="Zoom">0,5×</button>
     </div>
   </main>
 

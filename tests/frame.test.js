@@ -128,3 +128,26 @@ test('fitBox: nikdy nepřesáhne dostupné místo a drží poměr stran', () => 
     }
   }
 });
+
+test('cropRect zoom 1 je beze změny, zoom N zmenší výřez N× kolem středu', () => {
+  for (const o of ['landscape', 'portrait']) {
+    const base = cropRect(1920, 1080, o);
+    assert.deepEqual(cropRect(1920, 1080, o, 1), base);
+    const z = cropRect(1920, 1080, o, 4);
+    assert.ok(Math.abs(z.sw - base.sw / 4) < 1e-9 && Math.abs(z.sh - base.sh / 4) < 1e-9);
+    assert.ok(Math.abs(z.sx + z.sw / 2 - (base.sx + base.sw / 2)) < 1e-9);
+    assert.ok(Math.abs(z.sy + z.sh / 2 - (base.sy + base.sh / 2)) < 1e-9);
+  }
+});
+
+test('cropRect zoom 10 zůstane uvnitř videa a drží poměr', () => {
+  const r = cropRect(3840, 2160, 'landscape', 10);
+  assert.ok(r.sx >= 0 && r.sy >= 0 && r.sx + r.sw <= 3840 && r.sy + r.sh <= 2160);
+  assert.ok(Math.abs(r.sw / r.sh - ASPECT) < 1e-9);
+});
+
+test('outputLong: minimum zvětší malý (digitálně přiblížený) výřez', () => {
+  const tiny = cropRect(3840, 2160, 'landscape', 10);
+  assert.equal(outputLong(tiny, 'landscape', 3600, 1920), 1920);
+  assert.equal(outputLong(cropRect(3840, 2160), 'landscape', 3600, 1920), 3600);
+});

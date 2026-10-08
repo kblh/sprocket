@@ -1,14 +1,20 @@
 export const ASPECT = 2.2;
 
-export function cropRect(vw, vh, orientation = 'landscape') {
+export function cropRect(vw, vh, orientation = 'landscape', zoom = 1) {
+  let sw;
+  let sh;
   if (orientation === 'portrait') {
-    const sw = Math.min(vw, vh / ASPECT);
-    const sh = sw * ASPECT;
-    return { sx: (vw - sw) / 2, sy: (vh - sh) / 2, sw, sh };
+    sw = Math.min(vw, vh / ASPECT);
+    sh = sw * ASPECT;
+  } else {
+    sh = Math.min(vh, vw / ASPECT);
+    sw = sh * ASPECT;
   }
-  const sh = Math.min(vh, vw / ASPECT);
-  const sw = sh * ASPECT;
-  return { sx: (vw - sw) / 2, sy: (vh - sh) / 2, sw, sh };
+  const cx = vw / 2;
+  const cy = vh / 2;
+  sw /= zoom;
+  sh /= zoom;
+  return { sx: cx - sw / 2, sy: cy - sh / 2, sw, sh };
 }
 
 export function fitBox(availW, availH, orientation) {
@@ -26,9 +32,9 @@ export function canvasSize(L, orientation) {
     : { width: L.width, height: L.height };
 }
 
-export function outputLong(crop, orientation, max = 3600) {
+export function outputLong(crop, orientation, max = 3600, min = 0) {
   const long = orientation === 'portrait' ? crop.sh : crop.sw;
-  return Math.min(max, Math.round(long));
+  return Math.min(max, Math.max(min, Math.round(long)));
 }
 
 export function layout(width) {

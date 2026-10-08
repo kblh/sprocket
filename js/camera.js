@@ -37,6 +37,22 @@ export function pickWideDeviceId(devices) {
   return wide ? wide.deviceId : null;
 }
 
+export function videoTrack() {
+  return stream?.getVideoTracks?.()[0] ?? null;
+}
+
+export async function applyZoom(track, target) {
+  try {
+    const zoom = track?.getCapabilities?.().zoom;
+    if (!zoom) return null;
+    const value = Math.min(zoom.max ?? target, Math.max(zoom.min ?? target, target));
+    await track.applyConstraints({ advanced: [{ zoom: value }] });
+    return value;
+  } catch {
+    return null;
+  }
+}
+
 export async function applyMinZoom(track) {
   try {
     const zoom = track?.getCapabilities?.().zoom;
@@ -50,7 +66,7 @@ export async function applyMinZoom(track) {
 
 const sizeHint = { width: { ideal: 4096 }, height: { ideal: 3072 } };
 
-export async function start(facingMode = 'environment', nav = globalThis.navigator) {
+export async function start(facingMode = 'environment', nav = globalThis.navigator, { wide = true } = {}) {
   stop();
   if (!nav?.mediaDevices?.getUserMedia) {
     throw new CameraError('unsupported', 'getUserMedia is not available');
@@ -72,7 +88,7 @@ export async function start(facingMode = 'environment', nav = globalThis.navigat
     throw superseded();
   }
 
-  if (facingMode === 'environment') {
+  if (facingMode === 'environment' && wide) {
     let wideId = null;
     try {
       wideId = pickWideDeviceId((await nav.mediaDevices.enumerateDevices?.()) ?? []);

@@ -11,7 +11,8 @@ Webová aplikace (vanilla JS + HTML + CSS, bez frameworků a build kroku), kter�
 
 ### V rozsahu
 - Živý náhled z kamery v panoramatickém rámečku (poměr 2,2:1 podle referenčního snímku 2860×1302) s perforací a okraji filmu.
-- Přepnutí zadní a přední kamery.
+- Přepnutí zadní a přední kamery (tlačítko vpravo nahoře).
+- Zoom ve třech krocích na jednom tlačítku: `0,5×` (ultraširoká kamera / zoom pod 1×, výchozí), `1×` (hlavní kamera) a `10×` (zoom kamery, je-li podporovaný, zbytek digitální ořez; snímek se zvětší nejméně na 1920 px na delší straně). Volba se pamatuje.
 - Přepínač orientace filmu: na šířku (pás 2,2:1) nebo na výšku (svislý pás 1:2,2 s perforací po stranách). Volba se pamatuje.
 - Co nejvyšší rozlišení z kamery (žádost o 4096×3072, snímek nejvýše 3600 px na delší straně) a nejširší dostupný záběr: zadní ultraširoká kamera, případně zoom pod 1×.
 - Volné focení: spoušť okamžitě vytvoří jeden hotový snímek. Žádné počítadlo a žádné přetáčení filmu.
@@ -86,7 +87,7 @@ Parametry jsou jedna konstanta `TRIX` (kontrast, zrno, vinětace, měkkost). `op
 ## 6. Obrazovka kamery
 
 - Živý náhled v panoramatickém rámečku s perforací, vystředěný na obrazovce (na výšku telefonu zabírá celou šířku, nad a pod ním tmavé pozadí).
-- Dole velká kulatá spoušť. Vlevo přepínač orientace filmu, vpravo přepnutí kamery. Galerie (s miniaturou posledního snímku) je v levém horním rohu.
+- Dole velká kulatá spoušť. Vlevo přepínač orientace filmu, vpravo zoom. Galerie (s miniaturou posledního snímku) je v levém horním rohu, přepnutí kamery vpravo nahoře. Hledáček je zarovnaný nahoru, 1,5 rem pod tlačítky.
 - Po pořízení snímku se žádný náhled nezobrazí, snímek se uloží do galerie (toast „Snímek uložen do galerie.“) a lze hned fotit dál. Uložení do Fotek je z detailu snímku v galerii (**Uložit / Sdílet**). Když se galerie neuloží, zobrazí se výsledek, aby šel uložit ručně.
 
 ## 7. Chyby

@@ -8,6 +8,10 @@ const PREVIEW_W = 640;
 const MAX_W = 3600;
 const JPEG_Q = 0.92;
 const ORIENT_ICONS = { landscape: '▭', portrait: '▯' };
+const ZOOM_ORDER = ['wide', 'normal', 'max'];
+const ZOOM_LABELS = { wide: '0,5×', normal: '1×', max: '10×' };
+const ZOOM_MAX = 10;
+const MIN_ZOOMED_LONG = 1920;
 const THUMB_W = 320;
 const FRAMES_PER_ROLL = 36;
 const PREVIEW_INTERVAL_MS = 66;
@@ -32,6 +36,8 @@ let facing = 'environment';
 let screen = 'camera';
 let current = null; // { blob, id }
 let orientation = loadOrientation();
+let zoomLevel = loadZoom();
+let hwZoom = 1;
 let framed = null;
 let frameCounter = 0;
 let lastTick = 0;
@@ -69,13 +75,32 @@ function loadOrientation() {
 }
 // Rozměr hledáčku počítám v JS a nastavuji v px: iOS Safari po přepnutí orientace
 // nepřepočítal rozměry odvozené z CSS aspect-ratio a procentní výšky plátna.
-const RESERVED_H = 210;
 function sizeViewfinder() {
-  const { width, height } = fitBox(window.innerWidth, window.innerHeight - RESERVED_H, orientation);
+  const top = parseFloat(getComputedStyle($('camera-screen')).paddingTop) || 0;
+  const availH = window.innerHeight - top - $('controls').offsetHeight - 8;
+  const { width, height } = fitBox(window.innerWidth, availH, orientation);
   const vf = $('viewfinder');
   vf.style.width = `${Math.floor(width)}px`;
   vf.style.height = `${Math.floor(height)}px`;
 }
+function loadZoom() {
+  try {
+    const v = localStorage.getItem('sprocket.zoom');
+    return ZOOM_ORDER.includes(v) ? v : 'wide';
+  } catch { return 'wide'; }
+}
+
+// zoom kamery (je-li podporovaný) + digitální ořez na zbytek do 10×
+async function applyZoomLevel() {
+  const track = camera.videoTrack();
+  if (zoomLevel === 'max') hwZoom = (await camera.applyZoom(track, ZOOM_MAX)) ?? 1;
+  else {
+    if (zoomLevel === 'normal') await camera.applyZoom(track, 1);
+    hwZoom = 1;
+  }
+}
+const digitalZoom = () => (zoomLevel === 'max' ? ZOOM_MAX / hwZoom : 1);
+
 function applyOrientation() {
   $('orientation').textContent = ORIENT_ICONS[orientation];
   sizeViewfinder();
@@ -100,11 +125,11 @@ function playClick() {
 
 // --- vykreslení ------------------------------------------------------------
 
-function render(source, canvas, outLong, meta, seed, orient) {
+function render(source, canvas, outLong, meta, seed, orient, zoom = 1) {
   const vw = source.videoWidth || source.width;
   const vh = source.videoHeight || source.height;
   const portrait = orient === 'portrait';
-  const { sx, sy, sw, sh } = cropRect(vw, vh, orient);
+  const { sx, sy, sw, sh } = cropRect(vw, vh, orient, zoom);
   const L = layout(outLong);
   if (!work || work.width !== L.width || work.height !== L.height) {
     work = document.createElement('canvas');
@@ -150,15 +175,16 @@ function loop(t) {
   requestAnimationFrame(loop);
   if (screen !== 'camera' || !video.videoWidth || t - lastTick < PREVIEW_INTERVAL_MS) return;
   lastTick = t;
-  render(video, preview, PREVIEW_W, { number: peekNumber() }, ++frameCounter, orientation);
+  render(video, preview, PREVIEW_W, { number: peekNumber() }, ++frameCounter, orientation, digitalZoom());
 }
 
 // --- kamera ----------------------------------------------------------------
 
 async function startCamera() {
   try {
-    video.srcObject = await camera.start(facing);
+    video.srcObject = await camera.start(facing, undefined, { wide: zoomLevel === 'wide' });
     await video.play();
+    await applyZoomLevel();
     message.hidden = true;
   } catch (e) {
     if (e?.kind === 'superseded' || e?.name === 'AbortError') return;
@@ -201,9 +227,11 @@ function capture() {
   flash.classList.add('go');
 
   const number = peekNumber();
-  const crop = cropRect(video.videoWidth, video.videoHeight, orientation);
+  const zoom = digitalZoom();
+  const crop = cropRect(video.videoWidth, video.videoHeight, orientation, zoom);
   const canvas = document.createElement('canvas');
-  render(video, canvas, outputLong(crop, orientation, MAX_W), { number }, Date.now() & 0xffff, orientation);
+  const long = outputLong(crop, orientation, MAX_W, zoom > 1 ? MIN_ZOOMED_LONG : 0);
+  render(video, canvas, long, { number }, Date.now() & 0xffff, orientation, zoom);
   commitNumber(number);
   persistShot(canvas).catch(() => toast('Snímek se nepodařilo uložit.'));
 }
@@ -271,6 +299,15 @@ async function refreshGrid() {
 $('shutter').addEventListener('click', capture);
 window.addEventListener('resize', sizeViewfinder);
 window.addEventListener('orientationchange', sizeViewfinder);
+$('zoom').addEventListener('click', () => {
+  const prev = zoomLevel;
+  zoomLevel = ZOOM_ORDER[(ZOOM_ORDER.indexOf(zoomLevel) + 1) % ZOOM_ORDER.length];
+  try { localStorage.setItem('sprocket.zoom', zoomLevel); } catch { /* jen pohodlí */ }
+  $('zoom').textContent = ZOOM_LABELS[zoomLevel];
+  // z/na ultraširokou je jiný objektiv, takže se kamera spouští znovu
+  if (prev === 'wide' || zoomLevel === 'wide') startCamera();
+  else applyZoomLevel();
+});
 $('orientation').addEventListener('click', () => {
   orientation = orientation === 'portrait' ? 'landscape' : 'portrait';
   try { localStorage.setItem('sprocket.orientation', orientation); } catch { /* jen pohodlí */ }
@@ -305,6 +342,7 @@ document.addEventListener('visibilitychange', () => {
   else startCamera();
 });
 
+$('zoom').textContent = ZOOM_LABELS[zoomLevel];
 applyOrientation();
 startCamera();
 refreshLastThumb();

@@ -170,3 +170,50 @@ test('selhání enumerateDevices nezahodí funkční kameru', async () => {
   assert.equal(s1.stopped, 0);
   stop();
 });
+
+import { applyZoom, videoTrack } from '../js/camera.js';
+
+test('applyZoom omezí cíl na rozsah kamery a vrátí použitý zoom', async () => {
+  const applied = [];
+  const track = { getCapabilities: () => ({ zoom: { min: 1, max: 5 } }), applyConstraints: async (c) => applied.push(c) };
+  assert.equal(await applyZoom(track, 10), 5);
+  assert.deepEqual(applied[0], { advanced: [{ zoom: 5 }] });
+  assert.equal(await applyZoom(track, 0.5), 1);
+});
+
+test('applyZoom bez podpory nebo při chybě vrátí null', async () => {
+  assert.equal(await applyZoom({}, 10), null);
+  assert.equal(await applyZoom(null, 10), null);
+  const failing = { getCapabilities: () => ({ zoom: { min: 1, max: 5 } }), applyConstraints: async () => { throw new Error('x'); } };
+  assert.equal(await applyZoom(failing, 3), null);
+});
+
+test('start s wide:false nepřepíná na ultraširokou kameru ani nesnižuje zoom', async () => {
+  let n = 0;
+  const zoomCalls = [];
+  const s = streamWith('b');
+  s.getVideoTracks = () => [{
+    getSettings: () => ({ deviceId: 'b' }),
+    getCapabilities: () => ({ zoom: { min: 0.5, max: 10 } }),
+    applyConstraints: async (c) => zoomCalls.push(c),
+  }];
+  const nav = { mediaDevices: {
+    getUserMedia: async () => { n++; return s; },
+    enumerateDevices: async () => [dev('Back Ultra Wide Camera', 'u')],
+  } };
+  assert.equal(await start('environment', nav, { wide: false }), s);
+  assert.equal(n, 1);
+  assert.equal(zoomCalls.length, 0);
+  stop();
+});
+
+test('videoTrack vrací první video stopu běžícího streamu, po stop null', async () => {
+  const s = streamWith('b');
+  const track = s.getVideoTracks()[0];
+  s.getVideoTracks = () => [track];
+  const nav = { mediaDevices: { getUserMedia: async () => s } };
+  await start('user', nav);
+  assert.equal(videoTrack(), track);
+  stop();
+  assert.equal(videoTrack(), null);
+});
