@@ -11,6 +11,15 @@ export function cropRect(vw, vh, orientation = 'landscape') {
   return { sx: (vw - sw) / 2, sy: (vh - sh) / 2, sw, sh };
 }
 
+export function fitBox(availW, availH, orientation) {
+  if (orientation === 'portrait') {
+    const height = Math.min(availH, availW * ASPECT);
+    return { width: height / ASPECT, height };
+  }
+  const width = Math.min(availW, availH * ASPECT);
+  return { width, height: width / ASPECT };
+}
+
 export function canvasSize(L, orientation) {
   return orientation === 'portrait'
     ? { width: L.height, height: L.width }
@@ -85,6 +94,19 @@ export function drawFrame(ctx, source, L, meta = {}) {
   ctx.fillText(`${n}`, xs.n0, y);
   ctx.fillText(`${next}`, xs.n1, y);
   ctx.font = `bold ${smallSize}px "Helvetica Neue", Arial, sans-serif`;
-  ctx.fillText(`▶${n}A`, xs.a0, y);
-  ctx.fillText(`▶${next}A`, xs.a1, y);
+  arrowLabel(ctx, `${n}A`, xs.a0, y, smallSize);
+  arrowLabel(ctx, `${next}A`, xs.a1, y, smallSize);
+}
+
+// Šipka je nakreslená tvarem: znak ▶ iOS vykreslí jako barevné emoji.
+function arrowLabel(ctx, text, x, baseline, size) {
+  const h = size * 0.72;
+  const w = h * 0.8;
+  ctx.beginPath();
+  ctx.moveTo(x, baseline - h);
+  ctx.lineTo(x + w, baseline - h / 2);
+  ctx.lineTo(x, baseline);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillText(text, x + w + size * 0.15, baseline);
 }

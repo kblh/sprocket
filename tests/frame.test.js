@@ -101,3 +101,30 @@ test('outputLong: delší strana výřezu, nejvýše 3600', () => {
   assert.equal(outputLong(cropRect(1080, 1920, 'portrait'), 'portrait'), 1920);
   assert.equal(outputLong(cropRect(1000, 100), 'landscape', 3600), 220);
 });
+
+import { fitBox } from '../js/frame.js';
+
+test('fitBox: landscape se vejde na šířku nebo na výšku', () => {
+  const a = fitBox(390, 634, 'landscape');
+  assert.ok(Math.abs(a.width - 390) < 1e-9 && Math.abs(a.height - 390 / ASPECT) < 1e-9);
+  const b = fitBox(1200, 400, 'landscape');
+  assert.ok(Math.abs(b.height - 400) < 1e-9 && Math.abs(b.width - 400 * ASPECT) < 1e-9);
+});
+
+test('fitBox: portrait se vejde na výšku nebo na šířku', () => {
+  const a = fitBox(390, 634, 'portrait');
+  assert.ok(Math.abs(a.height - 634) < 1e-9 && Math.abs(a.width - 634 / ASPECT) < 1e-9);
+  const b = fitBox(300, 900, 'portrait');
+  assert.ok(Math.abs(b.width - 300) < 1e-9 && Math.abs(b.height - 300 * ASPECT) < 1e-9);
+});
+
+test('fitBox: nikdy nepřesáhne dostupné místo a drží poměr stran', () => {
+  for (const o of ['landscape', 'portrait']) {
+    for (const [w, h] of [[390, 634], [1200, 400], [300, 900], [0, 500]]) {
+      const r = fitBox(w, h, o);
+      assert.ok(r.width <= w + 1e-9 && r.height <= h + 1e-9);
+      const ratio = o === 'portrait' ? r.height / r.width : r.width / r.height;
+      assert.ok(r.width === 0 || Math.abs(ratio - ASPECT) < 1e-9);
+    }
+  }
+});

@@ -1,6 +1,6 @@
 import * as camera from './camera.js';
 import { applyTriX, grainSizeFor } from './film.js';
-import { cropRect, layout, drawFrame, canvasSize, outputLong } from './frame.js';
+import { cropRect, layout, drawFrame, canvasSize, outputLong, fitBox } from './frame.js';
 import { saveImage } from './save.js';
 import * as gallery from './gallery.js';
 
@@ -67,9 +67,18 @@ function commitNumber(n) {
 function loadOrientation() {
   try { return localStorage.getItem('sprocket.orientation') === 'portrait' ? 'portrait' : 'landscape'; } catch { return 'landscape'; }
 }
+// Rozměr hledáčku počítám v JS a nastavuji v px: iOS Safari po přepnutí orientace
+// nepřepočítal rozměry odvozené z CSS aspect-ratio a procentní výšky plátna.
+const RESERVED_H = 210;
+function sizeViewfinder() {
+  const { width, height } = fitBox(window.innerWidth, window.innerHeight - RESERVED_H, orientation);
+  const vf = $('viewfinder');
+  vf.style.width = `${Math.floor(width)}px`;
+  vf.style.height = `${Math.floor(height)}px`;
+}
 function applyOrientation() {
-  $('viewfinder').classList.toggle('portrait', orientation === 'portrait');
   $('orientation').textContent = ORIENT_ICONS[orientation];
+  sizeViewfinder();
 }
 
 function playClick() {
@@ -260,6 +269,8 @@ async function refreshGrid() {
 // --- události --------------------------------------------------------------
 
 $('shutter').addEventListener('click', capture);
+window.addEventListener('resize', sizeViewfinder);
+window.addEventListener('orientationchange', sizeViewfinder);
 $('orientation').addEventListener('click', () => {
   orientation = orientation === 'portrait' ? 'landscape' : 'portrait';
   try { localStorage.setItem('sprocket.orientation', orientation); } catch { /* jen pohodlí */ }

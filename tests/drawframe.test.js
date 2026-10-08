@@ -24,7 +24,7 @@ test('drawFrame: obraz přes celou plochu, pak černé otvory a číslování', 
   assert.equal(ctx.calls.filter((c) => c[0] === 'rect').length, 0);
 
   const texts = ctx.calls.filter((c) => c[0] === 'fillText').map((c) => c[1]);
-  assert.deepEqual([...texts].sort(), ['7', '8', '▶7A', '▶8A']);
+  assert.deepEqual([...texts].sort(), ['7', '7A', '8', '8A']);
 });
 
 test('drawFrame: žádný popisek filmu (TRI-X/KODAK) na pásu', () => {
@@ -32,5 +32,16 @@ test('drawFrame: žádný popisek filmu (TRI-X/KODAK) na pásu', () => {
   drawFrame(ctx, {}, layout(1200), { number: 36 });
   const texts = ctx.calls.filter((c) => c[0] === 'fillText').map((c) => c[1]).join(' ');
   assert.ok(!/TRI|KODAK|400/i.test(texts));
-  assert.deepEqual(texts.split(' ').sort(), ['1', '36', '▶1A', '▶36A']);
+  assert.deepEqual(texts.split(' ').sort(), ['1', '1A', '36', '36A']);
+});
+
+test('drawFrame: šipka je nakreslená tvarem, ne emoji znakem', () => {
+  const ctx = fakeCtx();
+  drawFrame(ctx, {}, layout(1200), { number: 5 });
+  const texts = ctx.calls.filter((c) => c[0] === 'fillText').map((c) => c[1]).join('');
+  assert.ok(/^[\x20-\x7e]*$/.test(texts), 'text smí obsahovat jen ASCII');
+  // otvory (1 fill) + dva trojúhelníky šipek
+  assert.equal(ctx.calls.filter((c) => c[0] === 'fill').length, 3);
+  const arrowDraws = ctx.calls.filter((c) => c[0] === 'closePath').length;
+  assert.equal(arrowDraws, layout(1200).holes.length + 2);
 });
