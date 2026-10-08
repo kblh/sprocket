@@ -1,12 +1,13 @@
 # Stav projektu
 
-Poslední aktualizace: 2026-10-08
+Poslední aktualizace: 2026-10-08 (po přidání zoomu)
 
 ## Kde co je
 
 - `docs/superpowers/specs/2026-10-07-sprocket-rocket-design.md`: aktuální specifikace (udržovaná průběžně).
 - `docs/superpowers/plans/2026-10-07-sprocket-rocket.md`: **historický** plán původní stavby. Neodpovídá dnešnímu kódu (3:1, černé pásy, popisek TRI-X). Neaktualizuje se.
-- Průběh vývoje je v historii gitu (`git log`).
+- `docs/CHANGELOG.md`: co se kdy udělalo a proč (chronologicky).
+- Podrobnosti jsou v historii gitu (`git log`).
 
 ## Neověřeno na skutečném telefonu
 
