@@ -1,9 +1,25 @@
 export const ASPECT = 2.2;
 
-export function cropRect(vw, vh) {
+export function cropRect(vw, vh, orientation = 'landscape') {
+  if (orientation === 'portrait') {
+    const sw = Math.min(vw, vh / ASPECT);
+    const sh = sw * ASPECT;
+    return { sx: (vw - sw) / 2, sy: (vh - sh) / 2, sw, sh };
+  }
   const sh = Math.min(vh, vw / ASPECT);
   const sw = sh * ASPECT;
   return { sx: (vw - sw) / 2, sy: (vh - sh) / 2, sw, sh };
+}
+
+export function canvasSize(L, orientation) {
+  return orientation === 'portrait'
+    ? { width: L.height, height: L.width }
+    : { width: L.width, height: L.height };
+}
+
+export function outputLong(crop, orientation, max = 3600) {
+  const long = orientation === 'portrait' ? crop.sh : crop.sw;
+  return Math.min(max, Math.round(long));
 }
 
 export function layout(width) {

@@ -64,3 +64,40 @@ test('layout: číslování leží pod dolní řadou otvorů a uvnitř snímku',
   const { n0, a0, n1, a1 } = L.text.xs;
   assert.ok(0 < n0 && n0 < a0 && a0 < n1 && n1 < a1 && a1 < L.width);
 });
+
+import { canvasSize, outputLong } from '../js/frame.js';
+
+test('cropRect portrait: svislý výřez 1:ASPECT uvnitř videa, vystředěný', () => {
+  const r = cropRect(1080, 1920, 'portrait');
+  assert.ok(Math.abs(r.sh / r.sw - ASPECT) < 1e-9);
+  assert.ok(r.sx >= 0 && r.sy >= 0 && r.sx + r.sw <= 1080 + 1e-9 && r.sy + r.sh <= 1920 + 1e-9);
+  assert.ok(Math.abs(r.sx - (1080 - r.sw) / 2) < 1e-9);
+});
+
+test('cropRect portrait: ze širokého videa 1920×1080 vezme výšku celou', () => {
+  const r = cropRect(1920, 1080, 'portrait');
+  assert.equal(r.sh, 1080);
+  assert.ok(Math.abs(r.sw - 1080 / ASPECT) < 1e-9);
+});
+
+test('cropRect portrait: velmi úzké video ořízne na výšku', () => {
+  const r = cropRect(100, 1000, 'portrait');
+  assert.equal(r.sw, 100);
+  assert.ok(Math.abs(r.sh - 100 * ASPECT) < 1e-9);
+});
+
+test('canvasSize: portrait prohodí rozměry layoutu', () => {
+  const L = layout(1000);
+  assert.deepEqual(canvasSize(L, 'landscape'), { width: L.width, height: L.height });
+  assert.deepEqual(canvasSize(L, 'portrait'), { width: L.height, height: L.width });
+});
+
+test('outputLong: delší strana výřezu, nejvýše 3600', () => {
+  const land = cropRect(4032, 3024);
+  assert.equal(outputLong(land, 'landscape'), 3600);
+  const port = cropRect(3024, 4032, 'portrait');
+  assert.equal(outputLong(port, 'portrait'), 3600);
+  assert.equal(outputLong(cropRect(1920, 1080), 'landscape'), 1920);
+  assert.equal(outputLong(cropRect(1080, 1920, 'portrait'), 'portrait'), 1920);
+  assert.equal(outputLong(cropRect(1000, 100), 'landscape', 3600), 220);
+});

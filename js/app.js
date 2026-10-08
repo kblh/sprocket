@@ -1,12 +1,13 @@
 import * as camera from './camera.js';
 import { applyTriX, grainSizeFor } from './film.js';
-import { cropRect, layout, drawFrame } from './frame.js';
+import { cropRect, layout, drawFrame, canvasSize, outputLong } from './frame.js';
 import { saveImage } from './save.js';
 import * as gallery from './gallery.js';
 
 const PREVIEW_W = 640;
 const MAX_W = 3600;
 const JPEG_Q = 0.92;
+const ORIENT_ICONS = { landscape: '▭', portrait: '▯' };
 const THUMB_W = 320;
 const FRAMES_PER_ROLL = 36;
 const PREVIEW_INTERVAL_MS = 66;
@@ -30,7 +31,8 @@ const resultImg = $('result-img');
 let facing = 'environment';
 let screen = 'camera';
 let current = null; // { blob, id }
-let busy = false;
+let orientation = loadOrientation();
+let framed = null;
 let frameCounter = 0;
 let lastTick = 0;
 let lastThumbUrl = null;
@@ -62,6 +64,14 @@ function commitNumber(n) {
   try { localStorage.setItem('sprocket.number', String(n)); } catch { /* bez úložiště se číslo neuchová */ }
 }
 
+function loadOrientation() {
+  try { return localStorage.getItem('sprocket.orientation') === 'portrait' ? 'portrait' : 'landscape'; } catch { return 'landscape'; }
+}
+function applyOrientation() {
+  $('viewfinder').classList.toggle('portrait', orientation === 'portrait');
+  $('orientation').textContent = ORIENT_ICONS[orientation];
+}
+
 function playClick() {
   try {
     audioCtx ??= new (window.AudioContext || window.webkitAudioContext)();
@@ -81,31 +91,57 @@ function playClick() {
 
 // --- vykreslení ------------------------------------------------------------
 
-function render(source, canvas, outW, meta, seed) {
+function render(source, canvas, outLong, meta, seed, orient) {
   const vw = source.videoWidth || source.width;
   const vh = source.videoHeight || source.height;
-  const { sx, sy, sw, sh } = cropRect(vw, vh);
-  const L = layout(outW);
+  const portrait = orient === 'portrait';
+  const { sx, sy, sw, sh } = cropRect(vw, vh, orient);
+  const L = layout(outLong);
   if (!work || work.width !== L.width || work.height !== L.height) {
     work = document.createElement('canvas');
     work.width = L.width;
     work.height = L.height;
   }
   const wctx = work.getContext('2d', { willReadFrequently: true });
-  wctx.drawImage(source, sx, sy, sw, sh, 0, 0, L.width, L.height);
+  wctx.save();
+  if (portrait) {
+    wctx.translate(0, L.height);
+    wctx.rotate(-Math.PI / 2);
+    wctx.drawImage(source, sx, sy, sw, sh, 0, 0, L.height, L.width);
+  } else {
+    wctx.drawImage(source, sx, sy, sw, sh, 0, 0, L.width, L.height);
+  }
+  wctx.restore();
   const img = wctx.getImageData(0, 0, L.width, L.height);
   applyTriX(img, { seed, grainSize: grainSizeFor(L.width) });
   wctx.putImageData(img, 0, 0);
-  if (canvas.width !== L.width) canvas.width = L.width;
-  if (canvas.height !== L.height) canvas.height = L.height;
-  drawFrame(canvas.getContext('2d'), work, L, meta);
+
+  const size = canvasSize(L, orient);
+  if (canvas.width !== size.width) canvas.width = size.width;
+  if (canvas.height !== size.height) canvas.height = size.height;
+  if (!portrait) {
+    drawFrame(canvas.getContext('2d'), work, L, meta);
+    return;
+  }
+  if (!framed || framed.width !== L.width || framed.height !== L.height) {
+    framed = document.createElement('canvas');
+    framed.width = L.width;
+    framed.height = L.height;
+  }
+  drawFrame(framed.getContext('2d'), work, L, meta);
+  const ctx = canvas.getContext('2d');
+  ctx.save();
+  ctx.translate(L.height, 0);
+  ctx.rotate(Math.PI / 2);
+  ctx.drawImage(framed, 0, 0);
+  ctx.restore();
 }
 
 function loop(t) {
   requestAnimationFrame(loop);
   if (screen !== 'camera' || !video.videoWidth || t - lastTick < PREVIEW_INTERVAL_MS) return;
   lastTick = t;
-  render(video, preview, PREVIEW_W, { number: peekNumber() }, ++frameCounter);
+  render(video, preview, PREVIEW_W, { number: peekNumber() }, ++frameCounter, orientation);
 }
 
 // --- kamera ----------------------------------------------------------------
@@ -138,6 +174,7 @@ function setLastThumb(blob) {
   if (lastThumbUrl) lastThumb.src = lastThumbUrl;
   else lastThumb.removeAttribute('src');
   lastThumb.hidden = !blob;
+  $('gallery-icon').hidden = !!blob;
 }
 
 async function refreshLastThumb() {
@@ -147,33 +184,35 @@ async function refreshLastThumb() {
   } catch { setLastThumb(null); }
 }
 
-async function capture() {
-  if (busy || !video.videoWidth) return;
-  busy = true;
+function capture() {
+  if (!video.videoWidth) return;
+  playClick();
+  flash.classList.remove('go');
+  void flash.offsetWidth;
+  flash.classList.add('go');
+
+  const number = peekNumber();
+  const crop = cropRect(video.videoWidth, video.videoHeight, orientation);
+  const canvas = document.createElement('canvas');
+  render(video, canvas, outputLong(crop, orientation, MAX_W), { number }, Date.now() & 0xffff, orientation);
+  commitNumber(number);
+  persistShot(canvas).catch(() => toast('Snímek se nepodařilo uložit.'));
+}
+
+async function persistShot(canvas) {
+  const blob = await toBlob(canvas, JPEG_Q);
+  let thumb = null;
   try {
-    playClick();
-    flash.classList.remove('go');
-    void flash.offsetWidth;
-    flash.classList.add('go');
-
-    const number = peekNumber();
-    const { sw } = cropRect(video.videoWidth, video.videoHeight);
-    const canvas = document.createElement('canvas');
-    render(video, canvas, Math.min(MAX_W, Math.round(sw)), { number }, Date.now() & 0xffff);
-    const blob = await toBlob(canvas, JPEG_Q);
-    commitNumber(number);
-
+    thumb = await makeThumb(canvas);
+    await gallery.add(blob, thumb);
+    setLastThumb(thumb);
+    toast('Snímek uložen do galerie.');
+  } catch {
     current = { blob, id: null };
-    try {
-      const thumb = await makeThumb(canvas);
-      current.id = await gallery.add(blob, thumb);
-      setLastThumb(thumb);
-    } catch {
-      toast('Galerii se nepodařilo uložit, snímek ulož ručně.');
-    }
-    showResult(blob, current.id !== null);
+    toast('Galerii se nepodařilo uložit, snímek ulož ručně.');
+    showResult(blob, false);
   } finally {
-    busy = false;
+    canvas.width = canvas.height = 0;
   }
 }
 
@@ -221,6 +260,11 @@ async function refreshGrid() {
 // --- události --------------------------------------------------------------
 
 $('shutter').addEventListener('click', capture);
+$('orientation').addEventListener('click', () => {
+  orientation = orientation === 'portrait' ? 'landscape' : 'portrait';
+  try { localStorage.setItem('sprocket.orientation', orientation); } catch { /* jen pohodlí */ }
+  applyOrientation();
+});
 $('retry').addEventListener('click', startCamera);
 $('switch-camera').addEventListener('click', () => {
   facing = facing === 'environment' ? 'user' : 'environment';
@@ -250,6 +294,7 @@ document.addEventListener('visibilitychange', () => {
   else startCamera();
 });
 
+applyOrientation();
 startCamera();
 refreshLastThumb();
 requestAnimationFrame(loop);

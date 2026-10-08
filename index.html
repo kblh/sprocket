@@ -11,7 +11,10 @@
   <video id="video" class="hidden-video" playsinline muted></video>
 
   <main id="camera-screen" class="screen">
-    <div class="viewfinder">
+    <button id="open-gallery" class="thumb-btn gallery-btn" aria-label="Galerie">
+      <span id="gallery-icon">▦</span><img id="last-thumb" alt="" hidden>
+    </button>
+    <div class="viewfinder" id="viewfinder">
       <canvas id="preview"></canvas>
       <div id="flash"></div>
     </div>
@@ -20,7 +23,7 @@
       <button id="retry" class="text-btn">Zkusit znovu</button>
     </div>
     <div class="controls">
-      <button id="open-gallery" class="thumb-btn" aria-label="Galerie"><img id="last-thumb" alt="" hidden></button>
+      <button id="orientation" class="round-btn" aria-label="Otočit film (na šířku / na výšku)">▭</button>
       <button id="shutter" aria-label="Spoušť"></button>
       <button id="switch-camera" class="round-btn" aria-label="Přepnout kameru">⟲</button>
     </div>

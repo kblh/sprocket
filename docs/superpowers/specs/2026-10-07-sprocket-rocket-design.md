@@ -12,6 +12,8 @@ Webová aplikace (vanilla JS + HTML + CSS, bez frameworků a build kroku), kter�
 ### V rozsahu
 - Živý náhled z kamery v panoramatickém rámečku (poměr 2,2:1 podle referenčního snímku 2860×1302) s perforací a okraji filmu.
 - Přepnutí zadní a přední kamery.
+- Přepínač orientace filmu: na šířku (pás 2,2:1) nebo na výšku (svislý pás 1:2,2 s perforací po stranách). Volba se pamatuje.
+- Co nejvyšší rozlišení z kamery (žádost o 4096×3072, snímek nejvýše 3600 px na delší straně) a nejširší dostupný záběr: zadní ultraširoká kamera, případně zoom pod 1×.
 - Volné focení: spoušť okamžitě vytvoří jeden hotový snímek. Žádné počítadlo a žádné přetáčení filmu.
 - Jediný film: Kodak Tri-X 400, černobílý (bez výběru filmů).
 - Uložení snímku: Web Share API se souborem (na telefonu „Uložit obrázek“ do Fotek), fallback na stažení souboru.
@@ -84,8 +86,8 @@ Parametry jsou jedna konstanta `TRIX` (kontrast, zrno, vinětace, měkkost). `op
 ## 6. Obrazovka kamery
 
 - Živý náhled v panoramatickém rámečku s perforací, vystředěný na obrazovce (na výšku telefonu zabírá celou šířku, nad a pod ním tmavé pozadí).
-- Dole velká kulatá spoušť. Vlevo miniatura posledního snímku (otevře galerii), vpravo přepnutí kamery.
-- Po pořízení snímku se na chvíli zobrazí náhled hotového snímku s tlačítky **Uložit / Sdílet** a **Zavřít**.
+- Dole velká kulatá spoušť. Vlevo přepínač orientace filmu, vpravo přepnutí kamery. Galerie (s miniaturou posledního snímku) je v levém horním rohu.
+- Po pořízení snímku se žádný náhled nezobrazí, snímek se uloží do galerie (toast „Snímek uložen do galerie.“) a lze hned fotit dál. Uložení do Fotek je z detailu snímku v galerii (**Uložit / Sdílet**). Když se galerie neuloží, zobrazí se výsledek, aby šel uložit ručně.
 
 ## 7. Chyby
 
