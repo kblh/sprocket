@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>Sprocket Rocket</title>
+  <defs>
+    <linearGradient id="ring" x1="0.15" y1="0.1" x2="0.85" y2="0.9">
+      <stop offset="0" stop-color="#3b4fe0"/>
+      <stop offset="0.35" stop-color="#8a3aa8"/>
+      <stop offset="0.65" stop-color="#ff2048"/>
+      <stop offset="1" stop-color="#ff7a1a"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="230" fill="#040418"/>
+  <g stroke="#ecd0b8" stroke-linecap="round"><line x1="75" y1="367" x2="420" y2="367" stroke-width="20"/><line x1="70" y1="399" x2="420" y2="399" stroke-width="12"/><line x1="70" y1="431" x2="420" y2="431" stroke-width="12"/><line x1="70" y1="463" x2="420" y2="463" stroke-width="12"/><line x1="70" y1="495" x2="420" y2="495" stroke-width="12"/><line x1="70" y1="527" x2="420" y2="527" stroke-width="12"/><line x1="70" y1="559" x2="420" y2="559" stroke-width="12"/><line x1="70" y1="591" x2="420" y2="591" stroke-width="12"/><line x1="70" y1="623" x2="420" y2="623" stroke-width="12"/><line x1="75" y1="660" x2="420" y2="660" stroke-width="20"/><line x1="604" y1="367" x2="949" y2="367" stroke-width="20"/><line x1="604" y1="399" x2="954" y2="399" stroke-width="12"/><line x1="604" y1="431" x2="954" y2="431" stroke-width="12"/><line x1="604" y1="463" x2="954" y2="463" stroke-width="12"/><line x1="604" y1="495" x2="954" y2="495" stroke-width="12"/><line x1="604" y1="527" x2="954" y2="527" stroke-width="12"/><line x1="604" y1="559" x2="954" y2="559" stroke-width="12"/><line x1="604" y1="591" x2="954" y2="591" stroke-width="12"/><line x1="604" y1="623" x2="954" y2="623" stroke-width="12"/><line x1="604" y1="660" x2="949" y2="660" stroke-width="20"/></g>
+  <circle cx="512" cy="512" r="231.5" fill="#040418" stroke="#ecd0b8" stroke-width="11"/>
+  <circle cx="512" cy="512" r="212" fill="none" stroke="#a8908a" stroke-width="2"/>
+  <circle cx="512" cy="512" r="180" fill="#0d0d26"/>
+  <circle cx="512" cy="512" r="168" fill="none" stroke="#5b5b78" stroke-width="10" stroke-dasharray="4 7.72"/>
+  <circle cx="512" cy="512" r="150" fill="#0d0d26"/>
+  <circle cx="512" cy="512" r="127" fill="#1a1a46" stroke="#101030" stroke-width="12"/>
+  <circle cx="512" cy="512" r="128" fill="none" stroke="url(#ring)" stroke-width="5"/>
+  <circle cx="512" cy="512" r="70" fill="#04041a"/>
+  <path d="M445 468A80 80 0 0 1 503 432" fill="none" stroke="#e2e2ee" stroke-width="11" stroke-linecap="round"/>
+  <path d="M549 586A82 82 0 0 0 577 549" fill="none" stroke="#8a8aa8" stroke-width="9" stroke-linecap="round" transform="rotate(0)"/>
+  <g fill="none" stroke="#ffcd6e" stroke-width="8" stroke-linejoin="miter"><g transform="translate(197 142)"><path d="M48 20C46 8 36 5 26 5C14 5 6 12 6 21C6 31 14 34 26 37C38 40 47 43 47 54C47 64 38 70 26 70C14 70 6 64 4 53"/></g><g transform="translate(274 142)"><path d="M6 75V5H30C42 5 49 13 49 24C49 35 42 43 30 43H6"/></g><g transform="translate(351 142)"><path d="M6 75V5H30C42 5 49 13 49 24C49 35 42 43 30 43H6M30 43L50 75"/></g><g transform="translate(430 142)"><ellipse cx="35" cy="40" rx="31" ry="33"/></g><g transform="translate(525 142)"><path d="M58 21A32 33 0 1 0 58 59"/></g><g transform="translate(614 142)"><path d="M6 5V75M50 5L6 44M22 33L52 75"/></g><g transform="translate(695 142)"><path d="M48 5H6V75H48M6 40H44"/></g><g transform="translate(768 142)"><path d="M2 5H56M29 5V75"/></g></g>
+  <g fill="none" stroke="#ecd0b8" stroke-width="8" stroke-linejoin="miter"><g transform="translate(275 812)"><path d="M6 75V5H30C42 5 49 13 49 24C49 35 42 43 30 43H6M30 43L50 75"/></g><g transform="translate(354 812)"><ellipse cx="35" cy="40" rx="31" ry="33"/></g><g transform="translate(449 812)"><path d="M58 21A32 33 0 1 0 58 59"/></g><g transform="translate(538 812)"><path d="M6 5V75M50 5L6 44M22 33L52 75"/></g><g transform="translate(619 812)"><path d="M48 5H6V75H48M6 40H44"/></g><g transform="translate(692 812)"><path d="M2 5H56M29 5V75"/></g></g>
+</svg>
